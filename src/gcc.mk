@@ -23,7 +23,8 @@ endef
 define $(PKG)_CONFIGURE
     # configure gcc
     mkdir '$(1).build'
-    cd    '$(1).build' && '$(1)/configure' \
+    # avoid configure executed via abs path.
+    cd '$(1).build' && '../$($(PKG)_SUBDIR)/configure' \
         --target='$(TARGET)' \
         --build='$(BUILD)' \
         --prefix='$(PREFIX)' \
@@ -72,7 +73,8 @@ define $(PKG)_BUILD_mingw-w64
     # install mingw-w64 headers
     $(call PREPARE_PKG_SOURCE,mingw-w64,$(1))
     mkdir '$(1).headers-build'
-    cd '$(1).headers-build' && '$(1)/$(mingw-w64_SUBDIR)/mingw-w64-headers/configure' \
+    # avoid configure executed via abs path.
+    cd '$(1).headers-build' && '../$($(PKG)_SUBDIR)/$(mingw-w64_SUBDIR)/mingw-w64-headers/configure' \
         --host='$(TARGET)' \
         --prefix='$(PREFIX)/$(TARGET)' \
         --enable-sdk=all \
@@ -86,7 +88,8 @@ define $(PKG)_BUILD_mingw-w64
 
     # build mingw-w64-crt
     mkdir '$(1).crt-build'
-    cd '$(1).crt-build' && '$(1)/$(mingw-w64_SUBDIR)/mingw-w64-crt/configure' \
+    # avoid configure executed via abs path.
+    cd '$(1).crt-build' && '../$($(PKG)_SUBDIR)/$(mingw-w64_SUBDIR)/mingw-w64-crt/configure' \
         --host='$(TARGET)' \
         --prefix='$(PREFIX)/$(TARGET)' \
         @gcc-crt-config-opts@
@@ -95,7 +98,8 @@ define $(PKG)_BUILD_mingw-w64
 
     # build posix threads
     mkdir '$(1).pthread-build'
-    cd '$(1).pthread-build' && '$(1)/$(mingw-w64_SUBDIR)/mingw-w64-libraries/winpthreads/configure' \
+    # avoid configure executed via abs path.
+    cd '$(1).pthread-build' && '../$($(PKG)_SUBDIR)/$(mingw-w64_SUBDIR)/mingw-w64-libraries/winpthreads/configure' \
         $(MXE_CONFIGURE_OPTS)
     $(MAKE) -C '$(1).pthread-build' -j '$(JOBS)' || $(MAKE) -C '$(1).pthread-build' -j '$(JOBS)'
     $(MAKE) -C '$(1).pthread-build' -j 1 install
