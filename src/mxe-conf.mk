@@ -102,7 +102,7 @@ define $(PKG)_BUILD_$(BUILD)
     cd '$(1)' && ./configure
 
     #create readonly directory to force wine to fail
-    $(INSTALL) -m444 -d "$$WINEPREFIX"
+    $(INSTALL) -m755 -d "$$WINEPREFIX"
 
     #create script "wine" in a directory which is in PATH
     mkdir -p '$(PREFIX)/$(BUILD)/bin/'

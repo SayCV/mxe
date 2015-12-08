@@ -41,7 +41,7 @@ WGET       := wget --no-check-certificate \
 REQUIREMENTS := autoconf automake autopoint bash bison bzip2 flex \
                 $(BUILD_CC) $(BUILD_CXX) gperf intltoolize $(LIBTOOL) \
                 $(LIBTOOLIZE) $(MAKE) openssl $(PATCH) $(PERL) python \
-                ruby scons $(SED) $(SORT) unzip wget xz 7za gdk-pixbuf-csource
+                ruby scons $(SED) $(SORT) unzip wget xz 7za gdk-pixbuf-csource pkg-config
 
 PREFIX     := $(PWD)/usr
 LOG_DIR    := $(PWD)/log
@@ -148,7 +148,7 @@ endef
 PRELOAD_VARS := LD_PRELOAD DYLD_FORCE_FLAT_NAMESPACE DYLD_INSERT_LIBRARIES
 
 # use a minimal whitelist of safe environment variables
-ENV_WHITELIST := PATH LANG MAKE% MXE% %PROXY %proxy LD_LIBRARY_PATH $(PRELOAD_VARS) ACLOCAL_PATH
+ENV_WHITELIST := PATH LANG MAKE% MXE% %PROXY %proxy LD_LIBRARY_PATH $(PRELOAD_VARS) ACLOCAL_PATH TMP%
 unexport $(filter-out $(ENV_WHITELIST),$(shell env | cut -d '=' -f1))
 
 # disable wine with readonly directory (created by mxe-conf)
@@ -417,10 +417,16 @@ download-only-$(1):
 endef
 $(foreach PKG,$(PKGS),$(eval $(call PKG_RULE,$(PKG))))
 
+# avoid ld_preload tests on mingw
 # disable networking during build-only rules for reproducibility
 ifeq ($(findstring darwin,$(BUILD)),)
+  ifeq ($(findstring mingw,$(BUILD)),)
     NONET_LIB := $(PREFIX)/$(BUILD)/lib/nonetwork.so
     PRELOAD   := LD_PRELOAD='$(NONET_LIB)'
+  else
+    NONET_LIB := $(PREFIX)/$(BUILD)/lib/nonetwork.dll
+    PRELOAD   := LD_PRELOAD=
+  endif  
 else
     NONET_LIB := $(PREFIX)/$(BUILD)/lib/nonetwork.dylib
     PRELOAD   := DYLD_FORCE_FLAT_NAMESPACE=1 DYLD_INSERT_LIBRARIES='$(NONET_LIB)'
@@ -429,9 +435,19 @@ endif
 
 $(shell [ -d '$(PREFIX)/$(BUILD)/lib' ] || mkdir -p '$(PREFIX)/$(BUILD)/lib')
 
+ifeq ($(findstring mingw,$(BUILD)),)
 $(NONET_LIB): $(TOP_DIR)/tools/nonetwork.c
 	@echo '[build nonetwork lib]'
-	@$(BUILD_CC) -shared -fPIC $(NONET_CFLAGS) -o $@ $<
+	@env > mxe.env
+	@echo '[BUILD - $(BUILD)]'
+	$(BUILD_CC) -shared -fPIC $(NONET_CFLAGS) -o $@ $<
+else
+$(NONET_LIB): $(TOP_DIR)/tools/nonetwork.c
+	#@echo '[build nonetwork lib]'
+	#@env > mxe.env
+	#@echo '[BUILD - $(BUILD)]'
+	#$(BUILD_CC) -shared $(NONET_CFLAGS) -Wl,--output-def,nonetwork.def,--out-implib,libnonetworkdll.a -o $@ $<
+endif
 
 define PKG_TARGET_RULE
 .PHONY: $(1)
