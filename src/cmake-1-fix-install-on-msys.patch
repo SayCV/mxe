@@ -1,0 +1,31 @@
+diff --git "a/bootstrap" "b/bootstrap"
+index da84040..009519c 100755
+--- "a/bootstrap"
++++ "b/bootstrap"
+@@ -163,7 +163,8 @@ case "${cmake_system}" in
+ *MINGW*)
+   cmake_fix_slashes()
+   {
+-    cmd //c echo "$(echo "$1" | sed 's/\\/\//g')" | sed 's/^"//;s/" *$//'
++    #cmd //c echo "$(echo "$1" | sed 's/\\/\//g')" | sed 's/^"//;s/" *$//'
++    echo "$1" | sed 's/\\/\//g'
+   }
+   ;;
+ *)
+@@ -603,14 +604,14 @@ cmake_try_make ()
+ }
+ 
+ # Parse arguments
+-cmake_verbose=
++cmake_verbose=1
+ cmake_parallel_make=
+ cmake_ccache_enabled=
+ cmake_prefix_dir="${cmake_default_prefix}"
+ while test $# != 0; do
+   case "$1" in
+   --prefix=*) dir=`cmake_arg "$1"`
+-              cmake_prefix_dir=`cmake_fix_slashes "$dir"` ;;
++              cmake_prefix_dir=`cmake_fix_slashes $(cygpath -w "$dir")` ;;
+   --parallel=*) cmake_parallel_make=`cmake_arg "$1"` ;;
+   --datadir=*) cmake_data_dir=`cmake_arg "$1"` ;;
+   --docdir=*) cmake_doc_dir=`cmake_arg "$1"` ;;

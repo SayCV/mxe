@@ -189,9 +189,8 @@ define PREPARE_PKG_SOURCE
     cd '$(2)/$($(1)_SUBDIR)'
     
     @if [ ! -e $(2)/check_pkg_patches_stamp ]; then \
-      : \
       $(foreach PKG_PATCH,$(PKG_PATCHES), \
-        (cd '$(2)/$($(1)_SUBDIR)' && $(PATCH) -p1 -u) < $(PKG_PATCH)) \
+        (cd '$(2)/$($(1)_SUBDIR)' && $(PATCH) -p1 -u) < $(PKG_PATCH);) \
       touch $(2)/check_pkg_patches_stamp; \
     fi
     
@@ -518,6 +517,10 @@ build-only-$(1)_$(3):
 	    @if [ ! -e $(2)/check_unpack_pkg_archive_stamp ]; then \
   	    rm -rf   '$(2)'; \
   	    mkdir -p '$(2)'; \
+	    fi
+	    
+	    @if [ ! x$($(1)_SUBDIR) == x ]; then \
+	      rm -rf '$(2)/$($(1)_SUBDIR)'.*
 	    fi
 	    
 	    $$(if $(value $(call LOOKUP_PKG_RULE,$(1),FILE,$(3))),\
