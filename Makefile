@@ -520,7 +520,7 @@ build-only-$(1)_$(3):
 	    fi
 	    
 	    @if [ ! x$($(1)_SUBDIR) == x ]; then \
-	      rm -rf '$(2)/$($(1)_SUBDIR)'.*
+	      rm -rf '$(2)/$($(1)_SUBDIR)'.*; \
 	    fi
 	    
 	    $$(if $(value $(call LOOKUP_PKG_RULE,$(1),FILE,$(3))),\
