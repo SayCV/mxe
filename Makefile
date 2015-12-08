@@ -181,10 +181,19 @@ PKG_TESTFILES = $(realpath $(sort $(wildcard $(addsuffix /$(1)-test*, $(TOP_DIR)
 PKG_PATCHES   = $(realpath $(sort $(wildcard $(addsuffix /$(1)-[0-9]*.patch, $(TOP_DIR)/src $(MXE_PLUGIN_DIRS)))))
 
 define PREPARE_PKG_SOURCE
-    cd '$(2)' && $(call UNPACK_PKG_ARCHIVE,$(1))
+    @if [ ! -e $(2)/check_unpack_pkg_archive_stamp ]; then \
+        cd '$(2)' && $(call UNPACK_PKG_ARCHIVE,$(1)); \
+        touch $(2)/check_unpack_pkg_archive_stamp; \
+    fi
+    
     cd '$(2)/$($(1)_SUBDIR)'
-    $(foreach PKG_PATCH,$(PKG_PATCHES),
-        (cd '$(2)/$($(1)_SUBDIR)' && $(PATCH) -p1 -u) < $(PKG_PATCH))
+    
+    @if [ ! -e $(2)/check_pkg_patches_stamp ]; then \
+      $(foreach PKG_PATCH,$(PKG_PATCHES),
+          (cd '$(2)/$($(1)_SUBDIR)' && $(PATCH) -p1 -u) < $(PKG_PATCH)); \
+      touch $(2)/check_pkg_patches_stamp; \
+    fi
+    
 endef
 
 PKG_CHECKSUM = \
@@ -504,8 +513,10 @@ build-only-$(1)_$(3):
 	    lsb_release -a 2>/dev/null || sw_vers 2>/dev/null || true
 	    autoconf --version 2>/dev/null | head -1
 	    automake --version 2>/dev/null | head -1
-	    rm -rf   '$(2)'
-	    mkdir -p '$(2)'
+	    @if [ ! -e $(2)/check_unpack_pkg_archive_stamp ]; then \
+  	    rm -rf   '$(2)'; \
+  	    mkdir -p '$(2)'; \
+	    fi
 	    $$(if $(value $(call LOOKUP_PKG_RULE,$(1),FILE,$(3))),\
 	        $$(call PREPARE_PKG_SOURCE,$(1),$(2)))
 	    $$(call $(call LOOKUP_PKG_RULE,$(1),BUILD,$(3)),$(2)/$($(1)_SUBDIR),$(TOP_DIR)/src/$(1)-test)
