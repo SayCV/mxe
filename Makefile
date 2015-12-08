@@ -189,13 +189,11 @@ define PREPARE_PKG_SOURCE
     cd '$(2)/$($(1)_SUBDIR)'
     
     @if [ ! -e $(2)/check_pkg_patches_stamp ]; then \
+      : \
+      $(foreach PKG_PATCH,$(PKG_PATCHES), \
+        (cd '$(2)/$($(1)_SUBDIR)' && $(PATCH) -p1 -u) < $(PKG_PATCH)) \
       touch $(2)/check_pkg_patches_stamp; \
-    else \
-      override PKG_PATCHES = $(null); \
     fi
-    
-    $(foreach PKG_PATCH,$(PKG_PATCHES),
-      (cd '$(2)/$($(1)_SUBDIR)' && $(PATCH) -p1 -u) < $(PKG_PATCH))
     
 endef
 
