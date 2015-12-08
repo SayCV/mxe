@@ -23,7 +23,7 @@ PKG_CDN            := d1yihgixbnrglp.cloudfront.net
 PWD        := $(shell pwd)
 SHELL      := bash
 
-MXE_TMP := $(PWD)
+MXE_TMP := $(PWD)/tmp
 
 BUILD_CC   := $(shell (gcc --help >/dev/null 2>&1 && echo gcc) || (clang --help >/dev/null 2>&1 && echo clang))
 BUILD_CXX  := $(shell (g++ --help >/dev/null 2>&1 && echo g++) || (clang++ --help >/dev/null 2>&1 && echo clang++))

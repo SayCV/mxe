@@ -20,7 +20,8 @@ endef
 
 define $(PKG)_BUILD_$(BUILD)
     mkdir '$(1).build'
-    cd    '$(1).build' && '$(1)/configure' \
+    # avoid configure executed via abs path.
+    cd    '$(1).build' && '../$($(PKG)_SUBDIR)/configure' \
         --prefix='$(PREFIX)/$(TARGET)'
     $(MAKE) -C '$(1).build' -j '$(JOBS)'
     $(MAKE) -C '$(1).build' -j 1 install
