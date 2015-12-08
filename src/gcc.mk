@@ -11,6 +11,8 @@ $(PKG)_URL      := http://ftp.gnu.org/pub/gnu/gcc/gcc-$($(PKG)_VERSION)/$($(PKG)
 $(PKG)_URL_2    := ftp://ftp.mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-$($(PKG)_VERSION)/$($(PKG)_FILE)
 $(PKG)_DEPS     := binutils mingw-w64
 
+$(PKG)_DEL_TMP       := no
+
 $(PKG)_FILE_$(BUILD) :=
 
 define $(PKG)_UPDATE
@@ -117,7 +119,7 @@ define $(PKG)_BUILD_mingw-w64
         SHLIB_SLIBDIR_QUAL= \
         install-shared)
 
-    $($(PKG)_POST_BUILD)
+    #$($(PKG)_POST_BUILD)
 endef
 
 $(PKG)_BUILD_x86_64-w64-mingw32 = $(subst @gcc-crt-config-opts@,--disable-lib32,$($(PKG)_BUILD_mingw-w64))

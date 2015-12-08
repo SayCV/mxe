@@ -189,10 +189,13 @@ define PREPARE_PKG_SOURCE
     cd '$(2)/$($(1)_SUBDIR)'
     
     @if [ ! -e $(2)/check_pkg_patches_stamp ]; then \
-      $(foreach PKG_PATCH,$(PKG_PATCHES),
-          (cd '$(2)/$($(1)_SUBDIR)' && $(PATCH) -p1 -u) < $(PKG_PATCH)); \
       touch $(2)/check_pkg_patches_stamp; \
+    else \
+      override PKG_PATCHES = $(null); \
     fi
+    
+    $(foreach PKG_PATCH,$(PKG_PATCHES),
+      (cd '$(2)/$($(1)_SUBDIR)' && $(PATCH) -p1 -u) < $(PKG_PATCH))
     
 endef
 
@@ -513,10 +516,12 @@ build-only-$(1)_$(3):
 	    lsb_release -a 2>/dev/null || sw_vers 2>/dev/null || true
 	    autoconf --version 2>/dev/null | head -1
 	    automake --version 2>/dev/null | head -1
+	    
 	    @if [ ! -e $(2)/check_unpack_pkg_archive_stamp ]; then \
   	    rm -rf   '$(2)'; \
   	    mkdir -p '$(2)'; \
 	    fi
+	    
 	    $$(if $(value $(call LOOKUP_PKG_RULE,$(1),FILE,$(3))),\
 	        $$(call PREPARE_PKG_SOURCE,$(1),$(2)))
 	    $$(call $(call LOOKUP_PKG_RULE,$(1),BUILD,$(3)),$(2)/$($(1)_SUBDIR),$(TOP_DIR)/src/$(1)-test)
@@ -526,7 +531,10 @@ build-only-$(1)_$(3):
 	    @echo 'settings.mk'
 	    @cat '$(TOP_DIR)/settings.mk'
 	    (du -k -d 0 '$(2)' 2>/dev/null || du -k --max-depth 0 '$(2)') | $(SED) -n 's/^\(\S*\).*/du: \1 KiB/p'
-	    rm -rfv  '$(2)'
+
+	    @if [ "$($(1)_DEL_TMP)" == "yes" ]; then \
+	      rm -rfv  '$(2)'; \
+	    fi
 	    )
 	touch '$(PREFIX)/$(3)/installed/$(1)'
 endef
