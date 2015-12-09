@@ -18,9 +18,9 @@ define $(PKG)_UPDATE
 endef
 
 define $(PKG)_BUILD
-    cd '$(1)/src/syscfg' && ln -s lock-obj-pub.mingw32.h lock-obj-pub.mingw32.static.h
-    cd '$(1)/src/syscfg' && ln -s lock-obj-pub.mingw32.h lock-obj-pub.mingw32.shared.h
-    cd '$(1)' && ./configure \
+    cd '$(1)/src/syscfg' && ln -s lock-obj-pub.mingw32.h lock-obj-pub.mingw32.static.h >/dev/null 2>&1
+    cd '$(1)/src/syscfg' && ln -s lock-obj-pub.mingw32.h lock-obj-pub.mingw32.shared.h >/dev/null 2>&1
+    cd '$(1)' && CC_FOR_BUILD=$(BUILD_CC) ./configure \
         $(MXE_CONFIGURE_OPTS) \
         --disable-nls \
         --disable-languages
