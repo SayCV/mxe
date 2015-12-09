@@ -79,7 +79,8 @@ endef
 
 define $(PKG)_BUILD_$(BUILD)
     $(MAKE) -C '$(1)/src' -j '$(JOBS)' \
-        PLAT=$(shell ([ `uname -s` == Darwin ] && echo "macosx") || ([ `uname -o` == Msys ] && echo "mingw") || echo `uname -s` | tr '[:upper:]' '[:lower:]')
+        PLAT=$(shell ([ `uname -s` == Darwin ] && echo "macosx") || ([ `uname -o` == Msys ] && echo "msys") || echo `uname -s` | tr '[:upper:]' '[:lower:]')
+    $(INSTALL) '$(1)/src/lua$($(PKG)_SOVERS).dll' '$(PREFIX)/bin/lua$($(PKG)_SOVERS).dll'
     $(INSTALL) '$(1)/src/lua' '$(PREFIX)/bin/$(BUILD)-lua'
     ln -sf '$(PREFIX)/bin/$(BUILD)-lua' '$(PREFIX)/$(BUILD)/bin/lua'
     $(INSTALL) '$(1)/src/luac' '$(PREFIX)/bin/$(BUILD)-luac'

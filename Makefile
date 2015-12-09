@@ -452,10 +452,10 @@ $(NONET_LIB): $(TOP_DIR)/tools/nonetwork.c
 	$(BUILD_CC) -shared -fPIC $(NONET_CFLAGS) -o $@ $<
 else
 $(NONET_LIB): $(TOP_DIR)/tools/nonetwork.c
-	#@echo '[build nonetwork lib]'
-	#@env > mxe.env
-	#@echo '[BUILD - $(BUILD)]'
-	#$(BUILD_CC) -shared $(NONET_CFLAGS) -Wl,--output-def,nonetwork.def,--out-implib,libnonetworkdll.a -o $@ $<
+	@#@echo '[build nonetwork lib]'
+	@#@env > mxe.env
+	@#@echo '[BUILD - $(BUILD)]'
+	@#$(BUILD_CC) -shared $(NONET_CFLAGS) -Wl,--output-def,nonetwork.def,--out-implib,libnonetworkdll.a -o $@ $<
 endif
 
 define PKG_TARGET_RULE
