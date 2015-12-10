@@ -26,11 +26,11 @@ define $(PKG)_BUILD
     echo 'using gcc : mxe : $(TARGET)-g++ : <rc>$(TARGET)-windres <archiver>$(TARGET)-ar <ranlib>$(TARGET)-ranlib ;' > '$(1)/user-config.jam'
 
     # compile boost build (b2)
-    cd '$(1)/tools/build/' && ./bootstrap.sh
+    cd '$(1)' && CC=$(TARGET)-gcc && ./bootstrap.sh --with-toolset=mingw --prefix='$(PREFIX)/$(TARGET)'
 
     # cross-build, see b2 options at:
     # http://www.boost.org/build/doc/html/bbv2/overview/invocation.html
-    cd '$(1)' && ./tools/build/b2 \
+    cd '$(1)' && ./b2 \
         -a \
         -q \
         -j '$(JOBS)' \

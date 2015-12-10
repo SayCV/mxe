@@ -17,7 +17,9 @@ define $(PKG)_UPDATE
 endef
 
 define $(PKG)_BUILD
-    cd '$(1)' && ./configure \
+    mkdir -p '$(1).build'
+    # avoid configure executed via abs path.
+    cd    '$(1).build' && '../$($(PKG)_SUBDIR)/configure' \
         $(MXE_CONFIGURE_OPTS)
-    $(MAKE) -C '$(1)' -j '$(JOBS)' installlib bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS=
+    $(MAKE) -C '$(1).build' -j '$(JOBS)' installlib bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS=
 endef
