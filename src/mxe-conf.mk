@@ -20,7 +20,7 @@ define $(PKG)_BUILD
     [ -d '$(CMAKE_TOOLCHAIN_DIR)' ] || mkdir -p '$(CMAKE_TOOLCHAIN_DIR)'
     (echo 'set(CMAKE_SYSTEM_NAME Windows)'; \
      echo 'set(MSYS 1)'; \
-     echo 'set(CMAKE_GENERATOR -G"MSYS Makefiles")'; \
+     echo 'set(CMAKE_GENERATOR "MSYS Makefiles")'; \
      echo 'set(BUILD_SHARED_LIBS $(if $(BUILD_SHARED),ON,OFF))'; \
      echo 'set(LIBTYPE $(if $(BUILD_SHARED),SHARED,STATIC))'; \
      echo 'set(CMAKE_PREFIX_PATH $(PREFIX)/$(TARGET))'; \
