@@ -6,6 +6,8 @@ $(PKG)_VERSION := 1
 $(PKG)_UPDATE  := echo 1
 $(PKG)_TARGETS := $(BUILD) $(MXE_TARGETS)
 
+slashfix = $(subst \,/,$(1))
+
 define $(PKG)_BUILD
     # install target-specific autotools config file
     $(INSTALL) -d '$(PREFIX)/$(TARGET)/share'
@@ -18,6 +20,7 @@ define $(PKG)_BUILD
     [ -d '$(CMAKE_TOOLCHAIN_DIR)' ] || mkdir -p '$(CMAKE_TOOLCHAIN_DIR)'
     (echo 'set(CMAKE_SYSTEM_NAME Windows)'; \
      echo 'set(MSYS 1)'; \
+     echo 'set(CMAKE_GENERATOR -G"MSYS Makefiles")'; \
      echo 'set(BUILD_SHARED_LIBS $(if $(BUILD_SHARED),ON,OFF))'; \
      echo 'set(LIBTYPE $(if $(BUILD_SHARED),SHARED,STATIC))'; \
      echo 'set(CMAKE_PREFIX_PATH $(PREFIX)/$(TARGET))'; \
@@ -25,10 +28,10 @@ define $(PKG)_BUILD
      echo 'set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)'; \
      echo 'set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)'; \
      echo 'set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)'; \
-     echo 'set(CMAKE_C_COMPILER $(PREFIX)/bin/$(TARGET)-gcc)'; \
-     echo 'set(CMAKE_CXX_COMPILER $(PREFIX)/bin/$(TARGET)-g++)'; \
-     echo 'set(CMAKE_Fortran_COMPILER $(PREFIX)/bin/$(TARGET)-gfortran)'; \
-     echo 'set(CMAKE_RC_COMPILER $(PREFIX)/bin/$(TARGET)-windres)'; \
+     echo 'set(CMAKE_C_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-gcc)))'; \
+     echo 'set(CMAKE_CXX_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-g++)))'; \
+     echo 'set(CMAKE_Fortran_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-gfortran)))'; \
+     echo 'set(CMAKE_RC_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-windres)))'; \
      echo 'set(CMAKE_MODULE_PATH "$(PREFIX)/share/cmake/modules" $${CMAKE_MODULE_PATH}) # For mxe FindPackage scripts'; \
      echo 'set(CMAKE_INSTALL_PREFIX $(PREFIX)/$(TARGET) CACHE PATH "Installation Prefix")'; \
      echo 'set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug|Release|RelWithDebInfo|MinSizeRel")'; \
