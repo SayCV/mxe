@@ -10,6 +10,8 @@ $(PKG)_FILE     := $(PKG)-everywhere-opensource-src-$($(PKG)_VERSION).tar.gz
 $(PKG)_URL      := http://download.qt.io/official_releases/qt/4.8/$($(PKG)_VERSION)/$($(PKG)_FILE)
 $(PKG)_DEPS     := gcc dbus freetds jpeg libmng libpng openssl postgresql sqlite tiff zlib
 
+$(PKG)_DEL_TMP       := no
+
 define $(PKG)_UPDATE
     $(WGET) -q -O- http://download.qt-project.org/official_releases/qt/4.8/ | \
     $(SED) -n 's,.*href="\(4\.[0-9]\.[^/]*\)/".*,\1,p' | \
@@ -18,17 +20,17 @@ define $(PKG)_UPDATE
     tail -1
 endef
 
-define $(PKG)_BUILD
-    cd '$(1)' && QTDIR='$(1)' ./bin/syncqt
-    cd '$(1)' && \
+define $(PKG)_CONFIGURE
+    cd '$(1).build' && \
         OPENSSL_LIBS="`'$(TARGET)-pkg-config' --libs-only-l openssl`" \
         PSQL_LIBS="-lpq -lsecur32 `'$(TARGET)-pkg-config' --libs-only-l openssl` -lws2_32" \
         SYBASE_LIBS="-lsybdb `'$(TARGET)-pkg-config' --libs-only-l gnutls` -liconv -lws2_32" \
-        ./configure \
+        CXXFLAGS="-DUNICODE -D_UNICODE" \
+        '../$($(PKG)_SUBDIR)/configure' \
         -opensource \
         -confirm-license \
         -fast \
-        -xplatform win32-g++ \
+        -platform win32-g++-4.6 \
         -device-option CROSS_COMPILE=$(TARGET)- \
         -device-option PKG_CONFIG='$(TARGET)-pkg-config' \
         -force-pkg-config \
@@ -65,59 +67,69 @@ define $(PKG)_BUILD
         -system-sqlite \
         -openssl-linked \
         -dbus-linked \
-        -v
+        -v \
+    && touch $(2)/check_configure_stamp
+endef
 
-    $(MAKE) -C '$(1)' -j '$(JOBS)'
+define $(PKG)_BUILD
+    cd '$(1)' && QTDIR='$(1)' ./bin/syncqt
+    mkdir -p '$(1).build'
+    @if [ ! -e $(2)/check_configure_stamp ]; then \
+  	  $(call $(PKG)_CONFIGURE,$(1),$(2)); \
+	  fi
+    
+
+    $(MAKE) -C '$(1).build' -j '$(JOBS)'
     rm -rf '$(PREFIX)/$(TARGET)/qt'
-    $(MAKE) -C '$(1)' -j 1 install
+    $(MAKE) -C '$(1).build' -j 1 install
     ln -sf '$(PREFIX)/$(TARGET)/qt/bin/qmake' '$(PREFIX)/bin/$(TARGET)'-qmake-qt4
 
     # lrelease (from linguist) needed to prepare translation files
-    $(MAKE) -C '$(1)/tools/linguist/lrelease' -j '$(JOBS)' install
+    $(MAKE) -C '$(1).build/tools/linguist/lrelease' -j '$(JOBS)' install
     ln -fs '$(PREFIX)/$(TARGET)/bin/lrelease' '$(PREFIX)/bin/$(TARGET)-lrelease'
 
-    cd '$(1)/tools/assistant' && '$(1)/bin/qmake' assistant.pro
+    cd '$(1).build/tools/assistant' && '$(1).build/bin/qmake' assistant.pro
     # can't figure out where -lQtCLucene comes from so use
     # sed on the output instead of patching the input
-    $(MAKE) -C '$(1)/tools/assistant' sub-lib-qmake_all
-    $(SED) -i 's,-lQtCLucene$$,-lQtCLucene4,' '$(1)/tools/assistant/lib/Makefile.Release'
-    $(MAKE) -C '$(1)/tools/assistant' -j '$(JOBS)' install
+    $(MAKE) -C '$(1).build/tools/assistant' sub-lib-qmake_all
+    $(SED) -i 's,-lQtCLucene$$,-lQtCLucene4,' '$(1).build/tools/assistant/lib/Makefile.Release'
+    $(MAKE) -C '$(1).build/tools/assistant' -j '$(JOBS)' install
 
     # likewise for these two
-    cd '$(1)/tools/designer/src/designer' && '$(1)/bin/qmake' designer.pro
+    cd '$(1).build/tools/designer/src/designer' && '$(1).build/bin/qmake' designer.pro
     $(if $(BUILD_SHARED),\
-        $(SED) -i 's/-lQtDesignerComponents /-lQtDesignerComponents4 /' '$(1)/tools/designer/src/designer/Makefile.Release' && \
-        $(SED) -i 's/-lQtDesigner /-lQtDesigner4 /'                     '$(1)/tools/designer/src/designer/Makefile.Release',)
-    cd '$(1)/tools/designer' && '$(1)/bin/qmake' designer.pro
-    $(MAKE) -C '$(1)/tools/designer' -j '$(JOBS)' install
+        $(SED) -i 's/-lQtDesignerComponents /-lQtDesignerComponents4 /' '$(1).build/tools/designer/src/designer/Makefile.Release' && \
+        $(SED) -i 's/-lQtDesigner /-lQtDesigner4 /'                     '$(1).build/tools/designer/src/designer/Makefile.Release',)
+    cd '$(1).build/tools/designer' && '$(1)/bin/qmake' designer.pro
+    $(MAKE) -C '$(1).build/tools/designer' -j '$(JOBS)' install
 
     # at least some of the qdbus tools are useful on target
-    cd '$(1)/tools/qdbus' && '$(1)/bin/qmake' qdbus.pro
-    $(MAKE) -C '$(1)/tools/qdbus' -j '$(JOBS)' install
+    cd '$(1).build/tools/qdbus' && '$(1).build/bin/qmake' qdbus.pro
+    $(MAKE) -C '$(1).build/tools/qdbus' -j '$(JOBS)' install
 
-    mkdir            '$(1)/test-qt'
-    cd               '$(1)/test-qt' && '$(PREFIX)/$(TARGET)/qt/bin/qmake' '$(PWD)/$(2).pro'
-    $(MAKE)       -C '$(1)/test-qt' -j '$(JOBS)'
-    $(INSTALL) -m755 '$(1)/test-qt/release/test-qt.exe' '$(PREFIX)/$(TARGET)/bin/'
+    mkdir            '$(1).build/test-qt'
+    cd               '$(1).build/test-qt' && '$(PREFIX)/$(TARGET)/qt/bin/qmake' '$(PWD)/$(2).pro'
+    $(MAKE)       -C '$(1).build/test-qt' -j '$(JOBS)'
+    $(INSTALL) -m755 '$(1).build/test-qt/release/test-qt.exe' '$(PREFIX)/$(TARGET)/bin/'
 
     # copy pkg-config files to standard directory
     cp '$(PREFIX)/$(TARGET)'/qt/lib/pkgconfig/* '$(PREFIX)/$(TARGET)'/lib/pkgconfig/
 
     # build test the manual way
-    mkdir '$(1)/test-$(PKG)-pkgconfig'
-    '$(PREFIX)/$(TARGET)/qt/bin/uic' -o '$(1)/test-$(PKG)-pkgconfig/ui_qt-test.h' '$(TOP_DIR)/src/qt-test.ui'
+    mkdir '$(1).build/test-$(PKG)-pkgconfig'
+    '$(PREFIX)/$(TARGET)/qt/bin/uic' -o '$(1).build/test-$(PKG)-pkgconfig/ui_qt-test.h' '$(TOP_DIR)/src/qt-test.ui'
     '$(PREFIX)/$(TARGET)/qt/bin/moc' \
-        -o '$(1)/test-$(PKG)-pkgconfig/moc_qt-test.cpp' \
-        -I'$(1)/test-$(PKG)-pkgconfig' \
+        -o '$(1).build/test-$(PKG)-pkgconfig/moc_qt-test.cpp' \
+        -I'$(1).build/test-$(PKG)-pkgconfig' \
         '$(TOP_DIR)/src/qt-test.hpp'
-    '$(PREFIX)/$(TARGET)/qt/bin/rcc' -name qt-test -o '$(1)/test-$(PKG)-pkgconfig/qrc_qt-test.cpp' '$(TOP_DIR)/src/qt-test.qrc'
+    '$(PREFIX)/$(TARGET)/qt/bin/rcc' -name qt-test -o '$(1).build/test-$(PKG)-pkgconfig/qrc_qt-test.cpp' '$(TOP_DIR)/src/qt-test.qrc'
     '$(TARGET)-g++' \
         -W -Wall -Werror -std=c++0x -pedantic \
         '$(TOP_DIR)/src/qt-test.cpp' \
-        '$(1)/test-$(PKG)-pkgconfig/moc_qt-test.cpp' \
-        '$(1)/test-$(PKG)-pkgconfig/qrc_qt-test.cpp' \
+        '$(1).build/test-$(PKG)-pkgconfig/moc_qt-test.cpp' \
+        '$(1).build/test-$(PKG)-pkgconfig/qrc_qt-test.cpp' \
         -o '$(PREFIX)/$(TARGET)/bin/test-$(PKG)-pkgconfig.exe' \
-        -I'$(1)/test-$(PKG)-pkgconfig' \
+        -I'$(1).build/test-$(PKG)-pkgconfig' \
         `'$(TARGET)-pkg-config' QtGui --cflags --libs`
 
     # setup cmake toolchain

@@ -519,8 +519,10 @@ build-only-$(1)_$(3):
   	    mkdir -p '$(2)'; \
 	    fi
 	    
-	    @if [ ! x$($(1)_SUBDIR) == x ]; then \
-	      rm -rf '$(2)/$($(1)_SUBDIR)'.*; \
+	    @if [ x$($(1)_SUBDIR) != x ]; then \
+	      if [ x$($(1)_DEL_TMP) != xno ]; then \
+	        rm -rf '$(2)/$($(1)_SUBDIR)'.*; \
+	      fi; \
 	    fi
 	    
 	    $$(if $(value $(call LOOKUP_PKG_RULE,$(1),FILE,$(3))),\
