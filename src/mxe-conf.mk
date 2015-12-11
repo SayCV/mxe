@@ -28,10 +28,10 @@ define $(PKG)_BUILD
      echo 'set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)'; \
      echo 'set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)'; \
      echo 'set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)'; \
-     echo 'set(CMAKE_C_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-gcc)))'; \
-     echo 'set(CMAKE_CXX_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-g++)))'; \
-     echo 'set(CMAKE_Fortran_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-gfortran)))'; \
-     echo 'set(CMAKE_RC_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-windres)))'; \
+     echo 'set(CMAKE_C_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-gcc.exe)))'; \
+     echo 'set(CMAKE_CXX_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-g++.exe)))'; \
+     echo 'set(CMAKE_Fortran_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-gfortran.exe)))'; \
+     echo 'set(CMAKE_RC_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-windres.exe)))'; \
      echo 'set(CMAKE_MODULE_PATH "$(PREFIX)/share/cmake/modules" $${CMAKE_MODULE_PATH}) # For mxe FindPackage scripts'; \
      echo 'set(CMAKE_INSTALL_PREFIX $(PREFIX)/$(TARGET) CACHE PATH "Installation Prefix")'; \
      echo 'set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug|Release|RelWithDebInfo|MinSizeRel")'; \
