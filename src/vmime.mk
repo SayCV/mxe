@@ -16,7 +16,7 @@ define $(PKG)_BUILD
     # The following hint is probably needed for ICU:
     # -DICU_LIBRARIES="`'$(TARGET)-pkg-config' --libs-only-l icu-i18n`"
 
-    cd '$(1)' && cmake \
+    cd '$(1)' && '$(TARGET)-cmake' \
         -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)' \
         -DCMAKE_AR='$(PREFIX)/bin/$(TARGET)-ar' \
         -DCMAKE_RANLIB='$(PREFIX)/bin/$(TARGET)-ranlib' \

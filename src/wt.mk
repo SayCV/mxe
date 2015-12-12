@@ -19,7 +19,7 @@ endef
 define $(PKG)_BUILD
     # build wt libraries
     mkdir '$(1).build'
-    cd '$(1).build' && cmake \
+    cd '$(1).build' && '$(TARGET)-cmake' \
         -DCONFIGDIR='$(PREFIX)/$(TARGET)/etc/wt' \
         -DBUILD_EXAMPLES=OFF \
         -DBUILD_TESTS=OFF \

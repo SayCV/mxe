@@ -23,7 +23,7 @@ define $(PKG)_BUILD
 
     # first we need a native build to create the compile tools
     mkdir '$(1).native_build'
-    cd '$(1).native_build' && cmake \
+    cd '$(1).native_build' && '$(TARGET)-cmake' \
         -DVTK_BUILD_ALL_MODULES=FALSE \
         -DVTK_Group_Rendering=FALSE \
         -DVTK_Group_StandAlone=FALSE \
@@ -38,7 +38,7 @@ define $(PKG)_BUILD
 
     # now the cross compilation
     mkdir '$(1).cross_build'
-    cd '$(1).cross_build' && cmake \
+    cd '$(1).cross_build' && '$(TARGET)-cmake' \
         -C '$(1)/TryRunResults.cmake' \
         -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)' \
         -DVTKCompileTools_DIR='$(1).native_build' \
@@ -58,7 +58,7 @@ define $(PKG)_BUILD
 
     #now build the GUI -> Qt -> SimpleView Example
     mkdir '$(1).test'
-    cd '$(1).test' && cmake \
+    cd '$(1).test' && '$(TARGET)-cmake' \
         -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)' \
         '$(1)/Examples/GUI/Qt/SimpleView'
     $(MAKE) -C '$(1).test' -j '$(JOBS)' VERBOSE=1

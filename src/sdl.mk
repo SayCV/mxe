@@ -19,20 +19,6 @@ define $(PKG)_UPDATE
 endef
 
 define $(PKG)_BUILD
-    $(SED) -i 's,-mwindows,-lwinmm -mwindows,' '$(1)/configure'
-    cd '$(1)' && ./configure \
-        $(MXE_CONFIGURE_OPTS) \
-        --enable-threads \
-        --enable-directx \
-        --disable-stdio-redirect
-    $(MAKE) -C '$(1)' -j '$(JOBS)'
-    $(MAKE) -C '$(1)' -j 1 install-bin install-hdrs install-lib install-data
-    ln -sf '$(PREFIX)/$(TARGET)/bin/sdl-config' '$(PREFIX)/bin/$(TARGET)-sdl-config'
-
-    '$(TARGET)-gcc' \
-        -W -Wall -Werror -ansi -pedantic \
-        '$(2).c' -o '$(PREFIX)/$(TARGET)/bin/test-sdl.exe' \
-        `'$(TARGET)-pkg-config' sdl --cflags --libs`
 
     # test cmake
     mkdir '$(1).test-cmake'

@@ -20,7 +20,7 @@ define $(PKG)_BUILD
     [ -d '$(CMAKE_TOOLCHAIN_DIR)' ] || mkdir -p '$(CMAKE_TOOLCHAIN_DIR)'
     (echo 'set(CMAKE_SYSTEM_NAME Windows)'; \
      echo 'set(MSYS 1)'; \
-     echo 'set(CMAKE_GENERATOR "MSYS Makefiles")'; \
+     echo 'set(CMAKE_GENERATOR "Not Work MSYS Makefiles" CACHE INTERNAL "" FORCE )'; \
      echo 'set(BUILD_SHARED_LIBS $(if $(BUILD_SHARED),ON,OFF))'; \
      echo 'set(LIBTYPE $(if $(BUILD_SHARED),SHARED,STATIC))'; \
      echo 'set(CMAKE_PREFIX_PATH $(PREFIX)/$(TARGET))'; \
@@ -33,7 +33,7 @@ define $(PKG)_BUILD
      echo 'set(CMAKE_Fortran_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-gfortran.exe)))'; \
      echo 'set(CMAKE_RC_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-windres.exe)))'; \
      echo 'set(CMAKE_MODULE_PATH "$(PREFIX)/share/cmake/modules" $${CMAKE_MODULE_PATH}) # For mxe FindPackage scripts'; \
-     echo 'set(CMAKE_INSTALL_PREFIX $(PREFIX)/$(TARGET) CACHE PATH "Installation Prefix")'; \
+     echo 'set(CMAKE_INSTALL_PREFIX $(call slashfix,$(shell cygpath -w $(PREFIX)/$(TARGET))) CACHE PATH "Installation Prefix")'; \
      echo 'set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug|Release|RelWithDebInfo|MinSizeRel")'; \
      echo 'set(CMAKE_CROSS_COMPILING ON) # Workaround for http://www.cmake.org/Bug/view.php?id=14075'; \
      echo 'set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> -O coff <FLAGS> <DEFINES> -o <OBJECT> <SOURCE>") # Workaround for buggy windres rules'; \
@@ -62,7 +62,7 @@ define $(PKG)_BUILD
      echo '    echo "== Using MXE runresult: $(CMAKE_RUNRESULT_FILE)"'; \
      echo '    exec "$(PREFIX)/$(BUILD)/bin/cmake" \
                          -DCMAKE_TOOLCHAIN_FILE="$(CMAKE_TOOLCHAIN_FILE)" \
-                         -C"$(CMAKE_RUNRESULT_FILE)" "$$@"'; \
+                         -C"$(CMAKE_RUNRESULT_FILE)" -G"MSYS Makefiles" "$$@"'; \
      echo 'fi'; \
     ) \
              > '$(PREFIX)/bin/$(TARGET)-cmake'

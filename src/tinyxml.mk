@@ -18,7 +18,7 @@ endef
 
 define $(PKG)_BUILD
     mkdir -p '$(1).build'
-    cd    '$(1).build' && '$(TARGET)-cmake' '$(1)' \
+    cd    '$(1).build' && '$(TARGET)-cmake' VERBOSE=1 '$(1)' \
         -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)' \
         -DBUILD_SHARED_LIBS=$(if $(BUILD_STATIC),FALSE,TRUE) \
         '$(1)'

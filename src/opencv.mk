@@ -20,7 +20,7 @@ endef
 define $(PKG)_BUILD
     # build
     mkdir '$(1).build'
-    cd '$(1).build' && cmake \
+    cd '$(1).build' && '$(TARGET)-cmake' \
       -DWITH_QT=OFF \
       -DWITH_OPENGL=ON \
       -DWITH_GSTREAMER=OFF \

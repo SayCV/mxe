@@ -20,12 +20,12 @@ define $(PKG)_BUILD
     # native build for tool comp_err
     # See https://bugs.mysql.com/bug.php?id=61340
     mkdir '$(1).native'
-    cd '$(1).native' && cmake \
+    cd '$(1).native' && '$(TARGET)-cmake' \
          '$(1)'
     $(MAKE) -C '$(1).native' -j '$(JOBS)' VERBOSE=1
     # cross-compilation
     mkdir '$(1).build'
-    cd '$(1).build' && cmake \
+    cd '$(1).build' && '$(TARGET)-cmake' \
         -DCMAKE_INSTALL_PREFIX=$(PREFIX)/$(TARGET) \
         -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)' \
         -DIMPORT_COMP_ERR='$(1).native/ImportCompErr.cmake' \

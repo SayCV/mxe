@@ -21,7 +21,7 @@ define $(PKG)_BUILD
 
     # first we need a native build to create the compile tools
     mkdir '$(1)/native_build'
-    cd '$(1)/native_build' && cmake \
+    cd '$(1)/native_build' && '$(TARGET)-cmake' \
         -DBUILD_TESTING=FALSE \
         -DOPENGL_INCLUDE_DIR='$(1)/Utilities/ParseOGLExt/headers' \
         -DVTK_USE_RENDERING=FALSE \
@@ -35,7 +35,7 @@ define $(PKG)_BUILD
 
     # now for the cross compilation
     mkdir '$(1)/cross_build'
-    cd '$(1)/cross_build' && cmake \
+    cd '$(1)/cross_build' && '$(TARGET)-cmake' \
         -C '$(1)/TryRunResults.cmake'\
         -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)'\
         -DBUILD_TESTING=FALSE\

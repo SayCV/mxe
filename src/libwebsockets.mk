@@ -17,7 +17,7 @@ define $(PKG)_UPDATE
 endef
 
 define $(PKG)_BUILD
-    cd '$(1)' && cmake \
+    cd '$(1)' && '$(TARGET)-cmake' \
         -DLWS_WITHOUT_TESTAPPS=ON \
         -DLWS_USE_EXTERNAL_ZLIB=ON \
         -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)'

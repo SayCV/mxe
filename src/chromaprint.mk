@@ -16,7 +16,7 @@ define $(PKG)_UPDATE
 endef
 
 define $(PKG)_BUILD
-    cd '$(1)' && cmake \
+    cd '$(1)' && '$(TARGET)-cmake' \
         -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)' \
         -DBUILD_SHARED_LIBS=$(if $(BUILD_SHARED),ON,OFF)
     $(MAKE) -C '$(1)' -j 1 install
