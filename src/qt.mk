@@ -21,62 +21,62 @@ define $(PKG)_UPDATE
 endef
 
 define $(PKG)_CONFIGURE
-    cd '$(1).build' && \
-        OPENSSL_LIBS="`'$(TARGET)-pkg-config' --libs-only-l openssl`" \
-        PSQL_LIBS="-lpq -lsecur32 `'$(TARGET)-pkg-config' --libs-only-l openssl` -lws2_32" \
-        SYBASE_LIBS="-lsybdb `'$(TARGET)-pkg-config' --libs-only-l gnutls` -liconv -lws2_32" \
-        CFLAGS="-DUNICODE -D_UNICODE" \
-        '../$($(PKG)_SUBDIR)/configure' \
-        -opensource \
-        -confirm-license \
-        -fast \
-        -platform win32-g++-4.6 \
-        -device-option CROSS_COMPILE=$(TARGET)- \
-        -device-option PKG_CONFIG='$(TARGET)-pkg-config' \
-        -force-pkg-config \
-        -release \
-        -exceptions \
-        -static \
-        -prefix '$(PREFIX)/$(TARGET)/qt' \
-        -prefix-install \
-        -script \
-        -no-iconv \
-        -opengl desktop \
-        -no-webkit \
-        -no-glib \
-        -no-gstreamer \
-        -no-phonon \
-        -no-phonon-backend \
-        -accessibility \
-        -no-reduce-exports \
-        -no-rpath \
-        -make libs \
-        -nomake demos \
-        -nomake docs \
-        -nomake examples \
-        -qt-sql-sqlite \
-        -qt-sql-odbc \
-        -qt-sql-psql \
-        -no-sql-mysql \
-        -qt-sql-tds -D Q_USE_SYBASE \
-        -system-zlib \
-        -system-libpng \
-        -system-libjpeg \
-        -system-libtiff \
-        -system-libmng \
-        -system-sqlite \
-        -openssl-linked \
-        -dbus-linked \
-        -v \
-    && touch $(2)/check_configure_stamp
+    @if [ ! -e $(2)/check_configure_stamp ]; then \
+      cd '$(1).build' && \
+          OPENSSL_LIBS="`'$(TARGET)-pkg-config' --libs-only-l openssl`" \
+          PSQL_LIBS="-lpq -lsecur32 `'$(TARGET)-pkg-config' --libs-only-l openssl` -lws2_32" \
+          SYBASE_LIBS="-lsybdb `'$(TARGET)-pkg-config' --libs-only-l gnutls` -liconv -lws2_32" \
+          CFLAGS="-DUNICODE -D_UNICODE" \
+          '../$($(PKG)_SUBDIR)/configure' \
+          -opensource \
+          -confirm-license \
+          -fast \
+          -platform win32-g++-4.6 \
+          -device-option CROSS_COMPILE=$(TARGET)- \
+          -device-option PKG_CONFIG='$(TARGET)-pkg-config' \
+          -force-pkg-config \
+          -release \
+          -exceptions \
+          -static \
+          -prefix '$(PREFIX)/$(TARGET)/qt' \
+          -prefix-install \
+          -script \
+          -no-iconv \
+          -opengl desktop \
+          -no-webkit \
+          -no-glib \
+          -no-gstreamer \
+          -no-phonon \
+          -no-phonon-backend \
+          -accessibility \
+          -no-reduce-exports \
+          -no-rpath \
+          -make libs \
+          -nomake demos \
+          -nomake docs \
+          -nomake examples \
+          -qt-sql-sqlite \
+          -qt-sql-odbc \
+          -qt-sql-psql \
+          -no-sql-mysql \
+          -qt-sql-tds -D Q_USE_SYBASE \
+          -system-zlib \
+          -system-libpng \
+          -system-libjpeg \
+          -system-libtiff \
+          -system-libmng \
+          -system-sqlite \
+          -openssl-linked \
+          -dbus-linked \
+          -v \
+      && touch $(2)/check_configure_stamp; \
+    fi
 endef
 
 define $(PKG)_BUILD
     cd '$(1)' && QTDIR='$(1)' ./bin/syncqt
     mkdir -p '$(1).build'
-    @if [ ! -e $(2)/check_configure_stamp ]; then \
-  	  $(call $(PKG)_CONFIGURE,$(1),$(2)); \
-	  fi
+    $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
     
 
     $(MAKE) -C '$(1).build' -j '$(JOBS)'

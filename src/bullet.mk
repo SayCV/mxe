@@ -17,7 +17,7 @@ define $(PKG)_UPDATE
 endef
 
 define $(PKG)_BUILD
-    cd '$(1)' && cmake . \
+    cd '$(1)' && '$(TARGET)-cmake' . \
         -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)' \
         -DINSTALL_LIBS=ON \
         -DBUILD_CPU_DEMOS=OFF \

@@ -18,18 +18,28 @@ define $(PKG)_UPDATE
     tail -1
 endef
 
+define $(PKG)_CONFIGURE
+    @if [ ! -e $(2)/check_configure_stamp ]; then \
+      cd '$(1)' && './configure' \
+          --target='$(TARGET)' \
+          --build='$(BUILD)' \
+          --prefix='$(PREFIX)' \
+          --disable-multilib \
+          --with-gcc \
+          --with-gnu-ld \
+          --with-gnu-as \
+          --disable-nls \
+          --disable-shared \
+          --disable-werror \
+      && touch $(2)/check_configure_stamp; \
+    fi
+endef
+
 define $(PKG)_BUILD
-    cd '$(1)' && ./configure \
-        --target='$(TARGET)' \
-        --build='$(BUILD)' \
-        --prefix='$(PREFIX)' \
-        --disable-multilib \
-        --with-gcc \
-        --with-gnu-ld \
-        --with-gnu-as \
-        --disable-nls \
-        --disable-shared \
-        --disable-werror
+    mkdir -p '$(1).build'
+	  
+  	$(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
+	  
     $(MAKE) -C '$(1)' -j '$(JOBS)'
     $(MAKE) -C '$(1)' -j 1 install
 
