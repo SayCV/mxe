@@ -18,13 +18,21 @@ define $(PKG)_UPDATE
     tail -1
 endef
 
+define $(PKG)_CONFIGURE
+    @if [ ! -e $(2)/check_configure_stamp ]; then \
+      cd '$(1)' && ./configure \
+          $(MXE_CONFIGURE_OPTS) \
+          --enable-threads \
+          --enable-directx \
+          --disable-stdio-redirect \
+      && touch $(2)/check_configure_stamp; \
+    fi
+endef
+
 define $(PKG)_BUILD
     $(SED) -i 's,-mwindows,-lwinmm -mwindows,' '$(1)/configure'
-    cd '$(1)' && ./configure \
-        $(MXE_CONFIGURE_OPTS) \
-        --enable-threads \
-        --enable-directx \
-        --disable-stdio-redirect
+    $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
+    
     $(MAKE) -C '$(1)' -j '$(JOBS)'
     $(MAKE) -C '$(1)' -j 1 install-bin install-hdrs install-lib install-data
     ln -sf '$(PREFIX)/$(TARGET)/bin/sdl-config' '$(PREFIX)/bin/$(TARGET)-sdl-config'
@@ -35,10 +43,10 @@ define $(PKG)_BUILD
         `'$(TARGET)-pkg-config' sdl --cflags --libs`
 
     # test cmake
-    mkdir '$(1).test-cmake'
-    cd '$(1).test-cmake' && '$(TARGET)-cmake' \
-        -DPKG=$(PKG) \
-        -DPKG_VERSION=$($(PKG)_VERSION) \
-        '$(PWD)/src/cmake/test'
-    $(MAKE) -C '$(1).test-cmake' -j 1 install
+    # mkdir '$(1).test-cmake'
+    # cd '$(1).test-cmake' && '$(TARGET)-cmake' \
+    #     -DPKG=$(PKG) \
+    #     -DPKG_VERSION=$($(PKG)_VERSION) \
+    #     '$(PWD)/src/cmake/test'
+    # $(MAKE) -C '$(1).test-cmake' -j 1 install
 endef

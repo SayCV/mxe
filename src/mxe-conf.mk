@@ -6,8 +6,6 @@ $(PKG)_VERSION := 1
 $(PKG)_UPDATE  := echo 1
 $(PKG)_TARGETS := $(BUILD) $(MXE_TARGETS)
 
-slashfix = $(subst \,/,$(1))
-
 define $(PKG)_BUILD
     # install target-specific autotools config file
     $(INSTALL) -d '$(PREFIX)/$(TARGET)/share'
@@ -23,8 +21,8 @@ define $(PKG)_BUILD
      echo 'set(CMAKE_GENERATOR "Not Work MSYS Makefiles" CACHE INTERNAL "" FORCE )'; \
      echo 'set(BUILD_SHARED_LIBS $(if $(BUILD_SHARED),ON,OFF))'; \
      echo 'set(LIBTYPE $(if $(BUILD_SHARED),SHARED,STATIC))'; \
-     echo 'set(CMAKE_PREFIX_PATH $(PREFIX)/$(TARGET))'; \
-     echo 'set(CMAKE_FIND_ROOT_PATH $(PREFIX)/$(TARGET))'; \
+     echo 'set(CMAKE_PREFIX_PATH $(call slashfix,$(shell cygpath -w $(PREFIX)/$(TARGET))))'; \
+     echo 'set(CMAKE_FIND_ROOT_PATH $(call slashfix,$(shell cygpath -w $(PREFIX)/$(TARGET))))'; \
      echo 'set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)'; \
      echo 'set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)'; \
      echo 'set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)'; \
@@ -32,7 +30,7 @@ define $(PKG)_BUILD
      echo 'set(CMAKE_CXX_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-g++.exe)))'; \
      echo 'set(CMAKE_Fortran_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-gfortran.exe)))'; \
      echo 'set(CMAKE_RC_COMPILER $(call slashfix,$(shell cygpath -w $(PREFIX)/bin/$(TARGET)-windres.exe)))'; \
-     echo 'set(CMAKE_MODULE_PATH "$(PREFIX)/share/cmake/modules" $${CMAKE_MODULE_PATH}) # For mxe FindPackage scripts'; \
+     echo 'set(CMAKE_MODULE_PATH "$(call slashfix,$(shell cygpath -w $(PREFIX)/share/cmake/modules))" $${CMAKE_MODULE_PATH}) # For mxe FindPackage scripts'; \
      echo 'set(CMAKE_INSTALL_PREFIX $(call slashfix,$(shell cygpath -w $(PREFIX)/$(TARGET))) CACHE PATH "Installation Prefix")'; \
      echo 'set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug|Release|RelWithDebInfo|MinSizeRel")'; \
      echo 'set(CMAKE_CROSS_COMPILING ON) # Workaround for http://www.cmake.org/Bug/view.php?id=14075'; \

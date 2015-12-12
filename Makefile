@@ -68,6 +68,8 @@ endef
 null  :=
 space := $(null) $(null)
 
+slashfix = $(subst \,/,$(1))
+
 MXE_CONFIGURE_OPTS = \
     --host='$(TARGET)' \
     --build='$(BUILD)' \
