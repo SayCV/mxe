@@ -43,10 +43,10 @@ define $(PKG)_BUILD
         `'$(TARGET)-pkg-config' sdl --cflags --libs`
 
     # test cmake
-    # mkdir '$(1).test-cmake'
-    # cd '$(1).test-cmake' && '$(TARGET)-cmake' \
-    #     -DPKG=$(PKG) \
-    #     -DPKG_VERSION=$($(PKG)_VERSION) \
-    #     '$(PWD)/src/cmake/test'
-    # $(MAKE) -C '$(1).test-cmake' -j 1 install
+    mkdir '$(1).test-cmake'
+    cd '$(1).test-cmake' && '$(TARGET)-cmake' \
+        -DPKG=$(PKG) \
+        -DPKG_VERSION=$($(PKG)_VERSION) \
+        '$(PWD)/src/cmake/test'
+    $(MAKE) -C '$(1).test-cmake' -j 1 install
 endef
