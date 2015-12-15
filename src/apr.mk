@@ -17,19 +17,32 @@ define $(PKG)_UPDATE
     $(SED) -n 's,.*APR \([0-9.]*\).*,\1,p'
 endef
 
-define $(PKG)_BUILD
-    cp -Rp '$(1)' '$(1).native'
-    cd '$(1).native' && ./configure
-    cd '$(1).native' && $(MAKE) tools/gen_test_char \
+define $(PKG)_CONFIGURE
+    @if [ ! -e $(2)/check_configure_stamp ]; then \
+      mkdir -p '$(1).build'; \
+      cp -Rp '$(1)' '$(1).native'
+      cd '$(1).native' && ./configure
+      cd '$(1).native' && $(MAKE) tools/gen_test_char \
         CFLAGS='-DNEED_ENHANCED_ESCAPES'
-    cd '$(1)' && ./configure \
+      cd '$(1)' && ./configure \
         $(MXE_CONFIGURE_OPTS) \
         ac_cv_sizeof_off_t=4 \
         ac_cv_sizeof_pid_t=4 \
         ac_cv_sizeof_size_t=4 \
         ac_cv_sizeof_ssize_t=4 \
-        CFLAGS=-D_WIN32_WINNT=0x0500
-    $(MAKE) -C '$(1)' -j 1 install GEN_TEST_CHAR='$(1).native/tools/gen_test_char'
+        CFLAGS=-D_WIN32_WINNT=0x0500 \
+      && touch $(2)/check_configure_stamp; \
+      rm -rf $(2)/check_make_stamp >/dev/null 2>&1; \
+      rm -rf $(2)/check_make_install_stamp >/dev/null 2>&1; \
+    fi
+endef
+
+define $(PKG)_BUILD
+    $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
+    if [ ! -e $(2)/check_make_stamp ]; then \
+      $(MAKE) -C '$(1)' -j 1 install GEN_TEST_CHAR='$(1).native/tools/gen_test_char' \
+      && touch $(2)/check_make_stamp; \
+    fi
 
     ln -sf '$(PREFIX)/$(TARGET)/bin/apr-1-config' '$(PREFIX)/bin/$(TARGET)-apr-1-config'
 endef

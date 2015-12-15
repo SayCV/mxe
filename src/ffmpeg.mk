@@ -26,8 +26,10 @@ define $(PKG)_UPDATE
     head -1
 endef
 
-define $(PKG)_BUILD
-    cd '$(1)' && ./configure \
+define $(PKG)_CONFIGURE
+    @if [ ! -e $(2)/check_configure_stamp ]; then \
+      mkdir -p $(1).build
+      cd '$(1).build' && ../$(1)/configure \
         --cross-prefix='$(TARGET)'- \
         --enable-cross-compile \
         --arch=$(firstword $(subst -, ,$(TARGET))) \
@@ -64,7 +66,21 @@ define $(PKG)_BUILD
         --enable-libvorbis \
         --enable-libvpx \
         --enable-libx264 \
-        --enable-libxvid
-    $(MAKE) -C '$(1)' -j '$(JOBS)'
-    $(MAKE) -C '$(1)' -j 1 install
+        --enable-libxvid \
+      && touch $(2)/check_configure_stamp; \
+      rm -rf $(2)/check_make_stamp >/dev/null 2>&1; \
+      rm -rf $(2)/check_make_install_stamp >/dev/null 2>&1; \
+    fi
+endef
+
+define $(PKG)_BUILD
+    $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
+    if [ ! -e $(2)/check_make_stamp ]; then \
+      $(MAKE) -C '$(1)' -j '$(JOBS)' \
+      && touch $(2)/check_make_stamp; \
+    fi
+    if [ ! -e $(2)/check_make_install_stamp ]; then \
+      $(MAKE) -C '$(1)' -j 1 install \
+      && touch $(2)/check_make_install_stamp; \
+    fi
 endef

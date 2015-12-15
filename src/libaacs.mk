@@ -18,14 +18,29 @@ define $(PKG)_UPDATE
     head -1
 endef
 
+define $(PKG)_CONFIGURE
+    @if [ ! -e $(2)/check_configure_stamp ]; then \
+      mkdir -p '$(1).build'; \
+      cd '$(1)' && autoreconf -fi; \
+      cd '$(1).build' && ../$(1)/configure \
+        $(MXE_CONFIGURE_OPTS) \
+      && touch $(2)/check_configure_stamp; \
+      rm -rf $(2)/check_make_stamp >/dev/null 2>&1; \
+      rm -rf $(2)/check_make_install_stamp >/dev/null 2>&1; \
+    fi
+endef
+
 define $(PKG)_BUILD
-    cd '$(1)' && autoreconf -fi
-    cd '$(1)' && ./configure \
-        $(MXE_CONFIGURE_OPTS)
-
-    $(MAKE) -C '$(1)' -j '$(JOBS)' $(MXE_DISABLE_CRUFT) LDFLAGS='-no-undefined'
-    $(MAKE) -C '$(1)' -j 1 install $(MXE_DISABLE_CRUFT)
-
+    $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
+    if [ ! -e $(2)/check_make_stamp ]; then \
+      $(MAKE) -C '$(1)' -j '$(JOBS)' $(MXE_DISABLE_CRUFT) LDFLAGS='-no-undefined' \
+      && touch $(2)/check_make_stamp; \
+    fi
+    if [ ! -e $(2)/check_make_install_stamp ]; then \
+      $(MAKE) -C '$(1)' -j 1 install $(MXE_DISABLE_CRUFT) \
+      && touch $(2)/check_make_install_stamp; \
+    fi
+    
     '$(TARGET)-gcc' \
         -W -Wall -Werror -std=c99 -pedantic \
         '$(2).c' \

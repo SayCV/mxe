@@ -16,13 +16,26 @@ define $(PKG)_UPDATE
     head -1
 endef
 
+define $(PKG)_CONFIGURE
+    @if [ ! -e $(2)/check_configure_stamp ]; then \
+      $(foreach f,authors news readme, mv '$(1)/$f' '$(1)/$f_';mv '$(1)/$f_' '$(1)/$(call uc,$f)';)
+      cd '$(1)' && autoreconf -fi -I $(PREFIX)/$(TARGET)/share/aclocal
+      mkdir -p $(1).build
+      cd '$(1).build' && ../$(1)/configure \
+          $(MXE_CONFIGURE_OPTS) \
+          --without-x \
+      && touch $(2)/check_configure_stamp; \
+      rm -rf $(2)/check_make_stamp >/dev/null 2>&1; \
+      rm -rf $(2)/check_make_install_stamp >/dev/null 2>&1; \
+    fi
+endef
+
 define $(PKG)_BUILD
-    $(foreach f,authors news readme, mv '$(1)/$f' '$(1)/$f_';mv '$(1)/$f_' '$(1)/$(call uc,$f)';)
-    cd '$(1)' && autoreconf -fi -I $(PREFIX)/$(TARGET)/share/aclocal
-    cd '$(1)' && ./configure \
-        $(MXE_CONFIGURE_OPTS) \
-        --without-x
-    $(MAKE) -C '$(1)' -j '$(JOBS)' install bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS=
+    $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
+    if [ ! -e $(2)/check_make_install_stamp ]; then \
+      $(MAKE) -C '$(1)' -j '$(JOBS)' install bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS= \
+      && touch $(2)/check_make_install_stamp; \
+    fi
 endef
 
 $(PKG)_BUILD_x86_64-w64-mingw32 =

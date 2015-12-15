@@ -16,10 +16,27 @@ define $(PKG)_UPDATE
     head -1
 endef
 
+define $(PKG)_CONFIGURE
+    @if [ ! -e $(2)/check_configure_stamp ]; then \
+      mkdir -p '$(1).build'; \
+      cd '$(1)' && rm aclocal.m4 && autoreconf -fi # The autotools files came with a52dec are _ancient_; \
+      cd '$(1).build' && ../$(1)/configure \
+        CFLAGS=-std=gnu89 \
+        $(MXE_CONFIGURE_OPTS) \
+      && touch $(2)/check_configure_stamp; \
+      rm -rf $(2)/check_make_stamp >/dev/null 2>&1; \
+      rm -rf $(2)/check_make_install_stamp >/dev/null 2>&1; \
+    fi
+endef
+
 define $(PKG)_BUILD
-    cd '$(1)' && rm aclocal.m4 && autoreconf -fi # The autotools files came with a52dec are _ancient_
-    cd '$(1)' && ./configure CFLAGS=-std=gnu89 \
-        $(MXE_CONFIGURE_OPTS)
-    $(MAKE) -C '$(1)' -j '$(JOBS)' bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS=
-    $(MAKE) -C '$(1)' -j 1 install bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS=
+    $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
+    if [ ! -e $(2)/check_make_stamp ]; then \
+      $(MAKE) -C '$(1)' -j '$(JOBS)' bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS= \
+      && touch $(2)/check_make_stamp; \
+    fi
+    if [ ! -e $(2)/check_make_install_stamp ]; then \
+      $(MAKE) -C '$(1)' -j 1 install bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS= \
+      && touch $(2)/check_make_install_stamp; \
+    fi
 endef

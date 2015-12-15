@@ -26,6 +26,8 @@ define $(PKG)_CONFIGURE
           --enable-directx \
           --disable-stdio-redirect \
       && touch $(2)/check_configure_stamp; \
+      rm -rf $(2)/check_make_stamp >/dev/null 2>&1; \
+      rm -rf $(2)/check_make_install_stamp >/dev/null 2>&1; \
     fi
 endef
 
@@ -33,20 +35,28 @@ define $(PKG)_BUILD
     $(SED) -i 's,-mwindows,-lwinmm -mwindows,' '$(1)/configure'
     $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
     
-    $(MAKE) -C '$(1)' -j '$(JOBS)'
-    $(MAKE) -C '$(1)' -j 1 install-bin install-hdrs install-lib install-data
-    ln -sf '$(PREFIX)/$(TARGET)/bin/sdl-config' '$(PREFIX)/bin/$(TARGET)-sdl-config'
-
-    '$(TARGET)-gcc' \
+    if [ ! -e $(2)/check_make_stamp ]; then \
+      $(MAKE) -C '$(1)' -j '$(JOBS)' \
+      && touch $(2)/check_make_stamp; \
+    fi
+    if [ ! -e $(2)/check_make_install_stamp ]; then \
+      $(MAKE) -C '$(1)' -j 1 install-bin install-hdrs install-lib install-data; \
+      ln -sf '$(PREFIX)/$(TARGET)/bin/sdl-config' '$(PREFIX)/bin/$(TARGET)-sdl-config'; \
+      \
+      '$(TARGET)-gcc' \
         -W -Wall -Werror -ansi -pedantic \
         '$(2).c' -o '$(PREFIX)/$(TARGET)/bin/test-sdl.exe' \
-        `'$(TARGET)-pkg-config' sdl --cflags --libs`
-
+        `'$(TARGET)-pkg-config' sdl --cflags --libs`; \
+      && touch $(2)/check_make_install_stamp; \
+    fi
+    
     # test cmake
-    mkdir '$(1).test-cmake'
-    cd '$(1).test-cmake' && '$(TARGET)-cmake' \
-        -DPKG=$(PKG) \
-        -DPKG_VERSION=$($(PKG)_VERSION) \
-        '$(PWD)/src/cmake/test'
-    $(MAKE) -C '$(1).test-cmake' -j 1 install
+    if [ x$MXE_TEST_CAMKE == xyes ]; then \
+      mkdir '$(1).test-cmake'; \
+      cd '$(1).test-cmake' && '$(TARGET)-cmake' \
+          -DPKG=$(PKG) \
+          -DPKG_VERSION=$($(PKG)_VERSION) \
+          '$(PWD)/src/cmake/test'; \
+      $(MAKE) -C '$(1).test-cmake' -j 1 install; \
+    fi
 endef
