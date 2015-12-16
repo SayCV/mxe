@@ -16,13 +16,26 @@ define $(PKG)_UPDATE
     head -1
 endef
 
-define $(PKG)_BUILD
-    mkdir '$(1)/build'
-    cd '$(1)/build' && cmake .. \
-        -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)' \
+define $(PKG)_CONFIGURE
+    @if [ ! -e $(2)/check_configure_stamp ]; then \
+      mkdir -p '$(1).build'; \
+      cd '$(1).build' && cmake \
+         -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)' \
         -DBUILD_SHARED_LIBS=$(if $(BUILD_SHARED),YES,NO) \
-        -DARMA_USE_WRAPPER=false
-    $(MAKE) -C '$(1)/build' -j '$(JOBS)' install VERBOSE=1
+        -DARMA_USE_WRAPPER=false \
+        .. \
+      && touch $(2)/check_configure_stamp; \
+      rm -rf $(2)/check_make_stamp >/dev/null 2>&1; \
+      rm -rf $(2)/check_make_install_stamp >/dev/null 2>&1; \
+    fi
+endef
+
+define $(PKG)_BUILD
+    $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
+    if [ ! -e $(shell dirname $(1))/check_make_install_stamp ]; then \
+      $(MAKE) -C '$(1).build' -j '$(JOBS)' install VERBOSE=1 \
+      && touch $(shell dirname $(1))/check_make_install_stamp; \
+    fi
 
     # note: don't use -Werror with GCC 4.7.0 and .1
     '$(TARGET)-g++' \

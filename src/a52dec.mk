@@ -31,12 +31,12 @@ endef
 
 define $(PKG)_BUILD
     $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
-    if [ ! -e $(2)/check_make_stamp ]; then \
-      $(MAKE) -C '$(1)' -j '$(JOBS)' bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS= \
-      && touch $(2)/check_make_stamp; \
+    if [ ! -e $(shell dirname $(1))/check_make_stamp ]; then \
+      $(MAKE) -C '$(1).build' -j '$(JOBS)' bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS= \
+      && touch $(shell dirname $(1))/check_make_stamp; \
     fi
-    if [ ! -e $(2)/check_make_install_stamp ]; then \
-      $(MAKE) -C '$(1)' -j 1 install bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS= \
-      && touch $(2)/check_make_install_stamp; \
+    if [ ! -e $(shell dirname $(1))/check_make_install_stamp ]; then \
+      $(MAKE) -C '$(1).build' -j 1 install bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS= \
+      && touch $(shell dirname $(1))/check_make_install_stamp; \
     fi
 endef

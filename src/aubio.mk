@@ -16,24 +16,37 @@ define $(PKG)_UPDATE
     head -1
 endef
 
-define $(PKG)_BUILD
-    cd '$(1)' &&                                  \
-        AR='$(TARGET)-ar'                         \
+define $(PKG)_CONFIGURE
+    @if [ ! -e $(2)/check_configure_stamp ]; then \
+      mkdir -p '$(1).build'; \
+      cd '$(1).build' && \
+          AR='$(TARGET)-ar'                         \
         CC='$(TARGET)-gcc'                        \
         PKGCONFIG='$(TARGET)-pkg-config'          \
-        ./waf configure                           \
+        ../$(1)/waf configure                           \
             -j '$(JOBS)'                          \
             --with-target-platform='win$(BITS)'   \
             --prefix='$(PREFIX)/$(TARGET)'        \
             --enable-fftw3f                       \
             $(if $(BUILD_STATIC),                 \
                 --enable-static --disable-shared, \
-                --disable-static --enable-shared)
+                --disable-static --enable-shared) \
+      && touch $(2)/check_configure_stamp; \
+      rm -rf $(2)/check_make_stamp >/dev/null 2>&1; \
+      rm -rf $(2)/check_make_install_stamp >/dev/null 2>&1; \
+    fi
+endef
+
+define $(PKG)_BUILD
+    $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
 
     # disable txt2man and doxygen
     $(SED) -i '/\(TXT2MAN\|DOXYGEN\)/d' '$(1)/build/c4che/_cache.py'
-
-    cd '$(1)' && ./waf build install
+    
+    if [ ! -e $(shell dirname $(1))/check_make_install_stamp ]; then \
+      cd '$(1).build' && ../$(1)/waf build install \
+      && touch $(shell dirname $(1))/check_make_install_stamp; \
+    fi
 
     # It is not trivial to adjust the installation in waf-based builds
     $(if $(BUILD_STATIC),                         \

@@ -20,7 +20,7 @@ define $(PKG)_CONFIGURE
     @if [ ! -e $(2)/check_configure_stamp ]; then \
       $(foreach f,authors news readme, mv '$(1)/$f' '$(1)/$f_';mv '$(1)/$f_' '$(1)/$(call uc,$f)';)
       cd '$(1)' && autoreconf -fi -I $(PREFIX)/$(TARGET)/share/aclocal
-      mkdir -p $(1).build
+      mkdir -p '$(1).build'
       cd '$(1).build' && ../$(1)/configure \
           $(MXE_CONFIGURE_OPTS) \
           --without-x \
@@ -32,9 +32,9 @@ endef
 
 define $(PKG)_BUILD
     $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
-    if [ ! -e $(2)/check_make_install_stamp ]; then \
-      $(MAKE) -C '$(1)' -j '$(JOBS)' install bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS= \
-      && touch $(2)/check_make_install_stamp; \
+    if [ ! -e $(shell dirname $(1))/check_make_install_stamp ]; then \
+      $(MAKE) -C '$(1).build' -j '$(JOBS)' install bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS= \
+      && touch $(shell dirname $(1))/check_make_install_stamp; \
     fi
 endef
 

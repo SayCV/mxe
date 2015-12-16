@@ -20,7 +20,7 @@ endef
 define $(PKG)_CONFIGURE
     @if [ ! -e $(2)/check_configure_stamp ]; then \
       mkdir -p '$(1).build'; \
-      cd '$(1)/build' && '$(TARGET)-cmake' \
+      cd '$(1).build' && '$(TARGET)-cmake' \
         -DBUILD_STATIC=ON \
         -DBUILD_SHARED=OFF \
         -DBUILD_EXAMPLES=OFF \
@@ -36,13 +36,13 @@ endef
 
 define $(PKG)_BUILD
     $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
-    if [ ! -e $(2)/check_make_stamp ]; then \
-      $(MAKE) -C '$(1)/build' -j $(JOBS) VERBOSE=1 \
-      && touch $(2)/check_make_stamp; \
+    if [ ! -e $(shell dirname $(1))/check_make_stamp ]; then \
+      $(MAKE) -C '$(1).build' -j $(JOBS) VERBOSE=1 \
+      && touch $(shell dirname $(1))/check_make_stamp; \
     fi
-    if [ ! -e $(2)/check_make_install_stamp ]; then \
-      $(MAKE) -C '$(1)/build' -j $(JOBS) install \
-      && touch $(2)/check_make_install_stamp; \
+    if [ ! -e $(shell dirname $(1))/check_make_install_stamp ]; then \
+      $(MAKE) -C '$(1).build' -j $(JOBS) install \
+      && touch $(shell dirname $(1))/check_make_install_stamp; \
     fi
 endef
 

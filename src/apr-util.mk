@@ -17,17 +17,34 @@ define $(PKG)_UPDATE
     $(SED) -n 's,.*APR-util \([0-9.]*\).*,\1,p'
 endef
 
-define $(PKG)_BUILD
-    cd '$(1)' && ./configure \
+define $(PKG)_CONFIGURE
+    @if [ ! -e $(2)/check_configure_stamp ]; then \
+      mkdir -p '$(1).build'; \
+      cd '$(1).build' && ../$(1)/configure \
         $(MXE_CONFIGURE_OPTS) \
         --without-pgsql \
         --without-sqlite2 \
         --without-sqlite3 \
         --without-freetds \
         --with-apr='$(PREFIX)/$(TARGET)' \
-        CFLAGS=-D_WIN32_WINNT=0x0500
-    $(MAKE) -C '$(1)' -j '$(JOBS)' $(MXE_DISABLE_CRUFT) LDFLAGS=-no-undefined
-    $(MAKE) -C '$(1)' -j 1 install $(MXE_DISABLE_CRUFT)
+        CFLAGS=-D_WIN32_WINNT=0x0500 \
+      && touch $(2)/check_configure_stamp; \
+      rm -rf $(2)/check_make_stamp >/dev/null 2>&1; \
+      rm -rf $(2)/check_make_install_stamp >/dev/null 2>&1; \
+    fi
+endef
+
+define $(PKG)_BUILD
+    $(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
+    if [ ! -e $(shell dirname $(1))/check_make_stamp ]; then \
+      $(MAKE) -C '$(1).build' -j '$(JOBS)' $(MXE_DISABLE_CRUFT) LDFLAGS=-no-undefined \
+      && touch $(shell dirname $(1))/check_make_stamp; \
+    fi
+    if [ ! -e $(shell dirname $(1))/check_make_install_stamp ]; then \
+      $(MAKE) -C '$(1).build' -j 1 install $(MXE_DISABLE_CRUFT) \
+      && touch $(shell dirname $(1))/check_make_install_stamp; \
+    fi
+    
     $(if $(BUILD_STATIC), \
         $(SED) -i '1i #define APU_DECLARE_STATIC 1' \
             '$(PREFIX)/$(TARGET)/include/apr-1/apu.h')

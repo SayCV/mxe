@@ -20,7 +20,8 @@ endef
 
 define $(PKG)_CONFIGURE
     @if [ ! -e $(2)/check_configure_stamp ]; then \
-      cd '$(1)' && './configure' \
+      mkdir -p '$(1).build'; \
+      cd '$(1).build' && '../$(1)/configure' \
           --target='$(TARGET)' \
           --build='$(BUILD)' \
           --prefix='$(PREFIX)' \
@@ -32,16 +33,21 @@ define $(PKG)_CONFIGURE
           --disable-shared \
           --disable-werror \
       && touch $(2)/check_configure_stamp; \
+      rm -rf $(2)/check_make_stamp >/dev/null 2>&1; \
+      rm -rf $(2)/check_make_install_stamp >/dev/null 2>&1; \
     fi
 endef
 
 define $(PKG)_BUILD
-    mkdir -p '$(1).build'
-	  
   	$(call $(PKG)_CONFIGURE,$(1),$(shell dirname $(1)))
-	  
-    $(MAKE) -C '$(1)' -j '$(JOBS)'
-    $(MAKE) -C '$(1)' -j 1 install
+    if [ ! -e $(shell dirname $(1))/check_make_stamp ]; then \
+      $(MAKE) -C '$(1).build' -j '$(JOBS)' \
+      && touch $(shell dirname $(1))/check_make_stamp; \
+    fi
+    if [ ! -e $(shell dirname $(1))/check_make_install_stamp ]; then \
+      $(MAKE) -C '$(1).build' -j 1 install \
+      && touch $(shell dirname $(1))/check_make_install_stamp; \
+    fi
 
     rm -f $(addprefix $(PREFIX)/$(TARGET)/bin/, ar as dlltool ld ld.bfd nm objcopy objdump ranlib strip)
 endef
